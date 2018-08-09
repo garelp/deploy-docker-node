@@ -1,0 +1,33 @@
+- name: Destroy multiple cloud instances in OpenStack
+  hosts: localhost
+
+  vars:
+    image: xenial-server-cloudimg-amd64
+    network: fr-net-1
+    key_name: key_pedro
+    flavor: 1CPU-4GB
+    count: 1
+    project: docker
+
+  tasks:
+    - name: Destroy instances
+      os_server:
+        cloud: HH2_NTTE
+        name: "{{ project }}-0{{ item }}"
+        flavor: "{{ flavor }}"
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
+        state: absent
+        wait: true
+        network: "{{ network }}"
+        auto_ip: true
+      with_sequence:
+        count={{ count }}
+
+    - name: delete additional volume for instances
+      os_volume:
+        cloud: HH2_NTTE
+        state: absent
+        display_name: "vol-{{ project }}-0{{ item }}"
+      with_sequence:
+        count={{ count }}

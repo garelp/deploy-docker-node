@@ -1,0 +1,45 @@
+
+- name: Create docker infra
+  hosts: localhost
+  tasks:
+  - name: User data script
+    shell: "cat userdata.sh"
+    register: user_data
+
+  - name: create 40g for docker
+    os_volume:
+      cloud: HH2_NTTE
+      state: present
+      size: 40
+      display_name: vol-docker-1
+
+  - name: create port with a fixed ip
+    os_port:
+      cloud: HH2_NTTE
+      state: present
+      name: port-docker-1
+      network: fr-net-1
+      fixed_ips:
+        - ip_address: 10.20.0.7
+
+  - name: launch docker server
+    ignore_errors: true
+    os_server:
+       cloud: HH2_NTTE
+       state: present
+       name: docker-1
+       image: xenial-server-cloudimg-amd64
+       key_name: key_pedro
+       timeout: 200
+       flavor: 1CPU-4GB
+       userdata: "{{ user_data.stdout }}"
+       nics:
+           - port-name: port-docker-1
+
+  - name: attach volume to docker-1
+    os_server_volume:
+      cloud: HH2_NTTE
+      state: present
+      server: docker-1
+      volume: vol-docker-1
+      device: /dev/vdb

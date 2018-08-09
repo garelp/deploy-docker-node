@@ -1,0 +1,6 @@
+- hosts: docker-servers
+  become: yes
+  user: ubuntu
+  roles:
+    - role: docker.ubuntu
+      docker_disk: /dev/vdb

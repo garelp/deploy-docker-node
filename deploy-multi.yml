@@ -1,0 +1,50 @@
+- name: Deploy multiple cloud instances in OpenStack
+  hosts: localhost
+
+  vars:
+    image: xenial-server-cloudimg-amd64
+    network: fr-net-1
+    key_name: key_pedro
+    flavor: 2CPU-8GB
+    count: 3
+    project: docker
+    vol_size: 40
+
+  tasks:
+    - name: User data script
+      shell: "cat userdata.sh"
+      register: user_data
+
+    - name: Launch instances
+      os_server:
+        cloud: HH2_NTTE
+        name: "{{ project }}-0{{ item }}"
+        flavor: "{{ flavor }}"
+        image: "{{ image }}"
+        key_name: "{{ key_name }}"
+        state: present
+        wait: true
+        network: "{{ network }}"
+        auto_ip: true
+        userdata: "{{ user_data.stdout }}"
+      with_sequence:
+        count={{ count }}
+
+    - name: create additional volume for instances
+      os_volume:
+        cloud: HH2_NTTE
+        state: present
+        size: "{{ vol_size }}"
+        display_name: "vol-{{ project }}-0{{ item }}"
+      with_sequence:
+        count={{ count }}
+
+    - name: attach volumes to instances
+      os_server_volume:
+        cloud: HH2_NTTE
+        state: present
+        server: "{{ project }}-0{{ item }}"
+        volume: "vol-{{ project }}-0{{ item }}"
+        device: /dev/vdb
+      with_sequence:
+        count={{ count }}

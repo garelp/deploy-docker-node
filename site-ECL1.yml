@@ -1,0 +1,6 @@
+- hosts: docker-servers
+# become: yes
+  user: root
+  roles:
+    - role: docker.ubuntu
+      docker_disk: /dev/sdb

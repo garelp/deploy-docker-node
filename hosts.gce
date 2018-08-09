@@ -1,0 +1,5 @@
+[docker-servers]
+#rancher2-0  ansible_host=35.195.47.193
+kube-1      ansible_host=35.240.22.10
+kube-2      ansible_host=104.199.100.15
+kube-3      ansible_host=35.233.30.27
